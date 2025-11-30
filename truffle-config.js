@@ -48,6 +48,7 @@ const HDWalletProvider = require('@truffle/hdwallet-provider');
 const fs = require('fs');
 const mnemonicPhrase = fs.readFileSync(".secret").toString().trim();
 const infuraProjectId = fs.readFileSync(".infura").toString().trim();
+const etherscanKey = fs.readFileSync(".etherscan").toString().trim();
 
 module.exports = {
   /**
@@ -93,14 +94,15 @@ module.exports = {
     sepolia: {
       provider: function () {
         const provider = new HDWalletProvider(mnemonicPhrase, `https://sepolia.infura.io/v3/${infuraProjectId}`)
-        provider.engine.stop();
 
         return provider;
       },
       network_id: 11155111,       // Sepolia's id
-      confirmations: 2,    // # of confirmations to wait between deployments. (default: 0)
-      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+      confirmations: 2,            // # of confirmations to wait between deployments
+      timeoutBlocks: 200,          // # of blocks before a deployment times out
+      skipDryRun: true,            // Skip dry run before migrations
+      networkCheckTimeout: 10000,  // Timeout for network connection check
+      deploymentPollingInterval: 8000,  // How often to poll for deployment status
     },
     //
     // Useful for private networks
@@ -121,15 +123,19 @@ module.exports = {
     solc: {
       version: "0.8.21",      // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
-      // settings: {          // See the solidity docs for advice about optimization and evmVersion
-      //  optimizer: {
-      //    enabled: false,
-      //    runs: 200
-      //  },
+      settings: {          // See the solidity docs for advice about optimization and evmVersion
+       optimizer: {
+         enabled: false,
+         runs: 200
+       },
       //  evmVersion: "byzantium"
-      // }
+      }
     }
   },
+  plugins: ['truffle-plugin-verify'],
+  api_keys: {
+    etherscan: etherscanKey
+  }
 
   // Truffle DB is currently disabled by default; to enable it, change enabled:
   // false to enabled: true. The default storage location can also be
